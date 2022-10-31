@@ -5,6 +5,7 @@ use rocket::form::Form;
 use rocket::{Request, Response,State};
 use rocket::fairing::{Fairing,Info,Kind};
 use rocket::http::{Method, ContentType, Status};
+use rocket::serde::json::Json;
 use std::io::Cursor;
 
 pub struct Pool(pub MySqlPool);
@@ -46,13 +47,14 @@ pub async fn create_connection() -> Result<MySqlPool, sqlx::Error> {
 pub async fn create_table(pool: &State<Pool>){
     sqlx::query(
     r#"
-    CREATE TABLE IF NOT EXISTS db {
-    uuid int,
-    username varchar(255),
-    email varchar(255),
-    password varchar(255),
-    phonenumber int
-    };"#,
+    CREATE TABLE IF NOT EXISTS db (
+    uuid int PRIMARY KEY NOT NULL,
+    username varchar(255) NOT NULL,
+    email varchar(255) NOT NULL,
+    password varchar(255) NOT NULL,
+    phonenumber int,
+    CONSTRAINT db UNIQUE (username,email)
+    );"#,
     )
     .execute(&pool.0)
     .await
@@ -60,7 +62,7 @@ pub async fn create_table(pool: &State<Pool>){
 }
 
 #[post("/add", format = "json", data = "<user>")]
-pub async fn add_to_table(pool: &State<Pool>, user: Form<User>){
+pub async fn add_to_table(pool: &State<Pool>, user: Json<User>){
     sqlx::query!(
         r#"
         INSERT INTO db (uuid,username,email,password,phonenumber)
@@ -91,7 +93,7 @@ pub async fn remove_from_table(pool: &State<Pool>, user: &str) {
 }
 
 #[post("/edit", format = "json", data ="<newuser>")]
-pub async fn edit_table(pool: &State<Pool>,newuser: Form<NewUser>){
+pub async fn edit_table(pool: &State<Pool>,newuser: Json<NewUser>){
     sqlx::query!(
         r#"
         UPDATE db
@@ -107,7 +109,9 @@ pub async fn edit_table(pool: &State<Pool>,newuser: Form<NewUser>){
         .unwrap();
 }
 
-pub async fn _return_table(pool: &State<Pool>) -> anyhow::Result<()>{
+//ONLY USED FOR DEVELOPMENT TAKE AWAY THE POST FOR FINAL SUBMISSION
+#[post("/$gOlC££SssXTyuXDE7PydCDx74zGKF")]
+pub async fn return_table(pool: &State<Pool>){
     let table = sqlx::query!(
         r#"
         SELECT *
@@ -115,7 +119,9 @@ pub async fn _return_table(pool: &State<Pool>) -> anyhow::Result<()>{
         "#
         )
         .fetch_all(&pool.0)
-        .await?;
+        .await
+        .unwrap();
+
     for entry in table {
         println!(
             "| {:?} | {:?} | {:?} | {:?} | {:?} |",
@@ -126,7 +132,6 @@ pub async fn _return_table(pool: &State<Pool>) -> anyhow::Result<()>{
             &entry.phonenumber
             );
     }
-    Ok(())
 }
 
 #[sqlx::test]
@@ -150,7 +155,8 @@ async fn create_table_test(pool: MySqlPool){
         username varchar(255) NOT NULL,
         email varchar(255) NOT NULL,
         password varchar(255) NOT NULL,
-        phonenumber INT
+        phonenumber INT,
+        CONSTRAINT db UNIQUE (username,email)
         );"#,
     )
     .execute(&pool)

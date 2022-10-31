@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Site</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <header>
+        <nav>
+            <ul class= "nav_links">
+                <li><a href="#" id = "login">Login</a></li>
+                <li><a href="#" id = "register">Register</a></li>
+            </ul>
+        </nav>
+        <a class="cta"><button class="button_header" onclick="active()">Contact</button></a>
+    </header>
+    <div class = "spacer homepagelayer flip"></div>
+    <section class = "dark full">
+        <h1> Authentication Site </h1>
+    </section>
+    <div class = "spacer homepagelayer"></div>
+    <div class = "popup">
+        <div class = "close-btn">&times;</div>
+        <div class = "form">
+            <h2>Log In</h2>
+            <div class = "form-element">
+                <form method="post" name = "input">
+                    <label for="email">Email</label>
+                    <input type="text" id="email" placeholder="Enter Email">
+                    <label for="password">Password</label>
+                    <input type="text" id="password" placeholder="Enter Password">
+                    <div class="form-element">
+                        <input id="submit" type="submit" name="submit" value="Submit" />
+                    </div>
+                </form>
+            <div class="form-element">
+                <a href="#">I Forgor?</a>
+            </div>
+        </div>
+        </div>
+    </div>
+    <div class = "popupregister">
+        <div class = "close-btn">&times;</div>
+        <div class = "form">
+            <h2>Register</h2>
+            <div class = "form-element">
+                <form method="post" name = "input">
+                    <label for="email">Email</label>
+                    <input type="text" id="email" placeholder="Enter Email">
+                    <label for="phonenumber">Phonenumber</label>
+                    <input type="text" id="username" placeholder="+44">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter Username">
+                    <label for="password">Password</label>
+                    <input type="text" id="password" placeholder="Enter Password">
+                    <label for="password">Confirm Password</label>
+                    <input type="text" id="confirmpassword" placeholder="Confirm Password">
+                    <div class="form-element">
+                        <input id="submit" type="submit" name="submit" value="Submit" />
+                    </div>
+                </form>
+            </div>
+            <div class="form-element">
+                <a href="#">I Forgor?</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.querySelector("#login").addEventListener("click",() => {
+            document.querySelector(".popupregister").classList.remove("active");
+            document.querySelector(".popup").classList.add("active");
+        });
+        document.querySelector("#register").addEventListener("click", () => {
+            document.querySelector(".popup").classList.remove("active");
+            document.querySelector(".popupregister").classList.add("active");
+        });
+        document.querySelector(".popup .close-btn").addEventListener("click", () => {
+            document.querySelector(".popup").classList.remove("active");
+        });
+        document.querySelector(".popupregister .close-btn").addEventListener("click", () => {
+            document.querySelector(".popupregister").classList.remove("active");
+        });
+    </script>
+</body>
+</html>

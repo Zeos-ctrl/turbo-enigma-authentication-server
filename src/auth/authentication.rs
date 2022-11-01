@@ -98,7 +98,7 @@ impl User{
     }
 
     pub fn verify_password(&self, password: &str) -> bool{
-        bcrypt::verify(&password, &self.password).unwrap()
+        bcrypt::verify(&self.password, &password).unwrap()
     }
 }
 

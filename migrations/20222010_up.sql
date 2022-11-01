@@ -1,7 +1,8 @@
 CREATE TABLE IF NOT EXISTS db (
-    uuid int NOT NULL,
+    uuid varchar(255) NOT NULL,
     username varchar(255) NOT NULL,
     email varchar(255) NOT NULL,
     password varchar(255) NOT NULL,
-    phonenumber INT
+    phonenumber INT,
+    CONSTRAINT db UNIQUE (username,email)
 );

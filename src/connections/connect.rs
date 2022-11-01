@@ -2,10 +2,12 @@ use super::super::auth::authentication::{User,NewUser};
 use sqlx::MySqlPool;
 use sqlx::mysql::MySqlPoolOptions;
 use rocket::form::Form;
+use rocket::response::Redirect;
 use rocket::{Request, Response,State};
 use rocket::fairing::{Fairing,Info,Kind};
 use rocket::http::{Method, ContentType, Status};
 use rocket::serde::json::Json;
+use uuid::Uuid;
 use std::io::Cursor;
 
 pub struct Pool(pub MySqlPool);
@@ -48,7 +50,7 @@ pub async fn create_table(pool: &State<Pool>){
     sqlx::query(
     r#"
     CREATE TABLE IF NOT EXISTS db (
-    uuid int PRIMARY KEY NOT NULL,
+    uuid varchar(255) PRIMARY KEY NOT NULL,
     username varchar(255) NOT NULL,
     email varchar(255) NOT NULL,
     password varchar(255) NOT NULL,
@@ -62,12 +64,13 @@ pub async fn create_table(pool: &State<Pool>){
 }
 
 #[post("/add", format = "json", data = "<user>")]
-pub async fn add_to_table(pool: &State<Pool>, user: Json<User>){
+pub async fn register(pool: &State<Pool>, user: Json<User>){
+    let id = Uuid::new_v4();
     sqlx::query!(
         r#"
         INSERT INTO db (uuid,username,email,password,phonenumber)
         VALUES (?,?,?,?,?);"#,
-        1,
+        id.to_string(),
         &user.username,
         &user.email,
         User::hash_password(&user.password),
@@ -109,6 +112,29 @@ pub async fn edit_table(pool: &State<Pool>,newuser: Json<NewUser>){
         .unwrap();
 }
 
+//Move to api call auth file in the future
+#[post("/login", format = "json", data = "<login>")]
+pub async fn login(pool: &State<Pool>, login: Json<User>) -> Status{
+    let user = sqlx::query!(
+        r#"
+        SELECT *
+        FROM db
+        WHERE username = ?;
+        "#,
+        &login.username
+        )
+        .fetch_one(&pool.0)
+        .await
+        .unwrap();
+    if login.verify_password(&user.password){
+        Redirect::to(uri!("./homepage.html"));
+        Status::Ok
+    }else{
+        Redirect::to(uri!("./index.html"));
+        Status::NotAcceptable
+    }
+}
+
 //ONLY USED FOR DEVELOPMENT TAKE AWAY THE POST FOR FINAL SUBMISSION
 #[post("/$gOlC££SssXTyuXDE7PydCDx74zGKF")]
 pub async fn return_table(pool: &State<Pool>){
@@ -116,6 +142,7 @@ pub async fn return_table(pool: &State<Pool>){
         r#"
         SELECT *
         FROM db
+        WHERE username = "test";
         "#
         )
         .fetch_all(&pool.0)
@@ -132,6 +159,19 @@ pub async fn return_table(pool: &State<Pool>){
             &entry.phonenumber
             );
     }
+}
+
+//DELETE AFTER THE PROJECT IS DONE JUST USED FOR TESTS
+#[post("/drop")]
+pub async fn drop(pool: &State<Pool>){
+    sqlx::query!(
+        r#"
+        DROP TABLE db;
+        "#
+        )
+        .fetch_all(&pool.0)
+        .await
+        .unwrap();
 }
 
 #[sqlx::test]
@@ -151,7 +191,7 @@ async fn create_table_test(pool: MySqlPool){
     let _query =sqlx::query(
         r#"
         CREATE TABLE IF NOT EXISTS db (
-        uuid int PRIMARY KEY NOT NULL,
+        uuid varchar(255) PRIMARY KEY NOT NULL,
         username varchar(255) NOT NULL,
         email varchar(255) NOT NULL,
         password varchar(255) NOT NULL,
@@ -171,10 +211,12 @@ async fn create_table_test(pool: MySqlPool){
 
 #[sqlx::test]
 async fn add_user_to_db_test(pool: MySqlPool){
-    let _query =sqlx::query(
+    let id = Uuid::new_v4();
+    let _query =sqlx::query!(
         r#"
         INSERT INTO db (uuid,username,email,password,phonenumber)
-        VALUES (1,'test','test','test',1);"#,
+        VALUES (?,'test','test','test',1);"#,
+        id.to_string()
     )
     .execute(&pool)
     .await;

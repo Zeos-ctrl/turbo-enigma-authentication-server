@@ -1,13 +1,8 @@
-use super::super::auth::authentication::{User,NewUser};
 use sqlx::MySqlPool;
 use sqlx::mysql::MySqlPoolOptions;
-use rocket::form::Form;
-use rocket::response::Redirect;
 use rocket::{Request, Response,State};
 use rocket::fairing::{Fairing,Info,Kind};
 use rocket::http::{Method, ContentType, Status};
-use rocket::serde::json::Json;
-use uuid::Uuid;
 use std::io::Cursor;
 
 pub struct Pool(pub MySqlPool);
@@ -61,78 +56,6 @@ pub async fn create_table(pool: &State<Pool>){
     .execute(&pool.0)
     .await
     .unwrap();
-}
-
-#[post("/add", format = "json", data = "<user>")]
-pub async fn register(pool: &State<Pool>, user: Json<User>){
-    let id = Uuid::new_v4();
-    sqlx::query!(
-        r#"
-        INSERT INTO db (uuid,username,email,password,phonenumber)
-        VALUES (?,?,?,?,?);"#,
-        id.to_string(),
-        &user.username,
-        &user.email,
-        User::hash_password(&user.password),
-        &user.phonenumber
-    )
-    .execute(&pool.0)
-    .await
-    .unwrap();
-}
-
-#[delete("/remove/<user>")]
-pub async fn remove_from_table(pool: &State<Pool>, user: &str) {
-    let username = user.to_string();
-    sqlx::query!(
-        r#"
-        DELETE FROM db
-        WHERE username = ?;"#,
-        username
-    )
-    .execute(&pool.0)
-    .await
-    .unwrap();
-}
-
-#[post("/edit", format = "json", data ="<newuser>")]
-pub async fn edit_table(pool: &State<Pool>,newuser: Json<NewUser>){
-    sqlx::query!(
-        r#"
-        UPDATE db
-        SET password = ?
-        WHERE username = ?
-        AND password = ?;"#,
-        &newuser.new_password,
-        &newuser.username,
-        User::hash_password(&newuser.old_password)
-        )
-        .execute(&pool.0)
-        .await
-        .unwrap();
-}
-
-//Move to api call auth file in the future
-#[post("/login", format = "json", data = "<login>")]
-pub async fn login(pool: &State<Pool>, login: Json<User>) -> Status{
-    let user = sqlx::query!(
-        r#"
-        SELECT *
-        FROM db
-        WHERE username = ?;
-        "#,
-        &login.username
-        )
-        .fetch_one(&pool.0)
-        .await
-        .unwrap();
-    if login.verify_password(&user.password){
-        Redirect::to(uri!("./homepage.html"));
-        Status::Ok
-    }else{
-        Redirect::to(uri!("./index.html"));
-        Status::NotAcceptable
-    }
 }
 
 //ONLY USED FOR DEVELOPMENT TAKE AWAY THE POST FOR FINAL SUBMISSION
@@ -208,80 +131,6 @@ async fn create_table_test(pool: MySqlPool){
         } 
     }
 }
-
-#[sqlx::test]
-async fn add_user_to_db_test(pool: MySqlPool){
-    let id = Uuid::new_v4();
-    let _query =sqlx::query!(
-        r#"
-        INSERT INTO db (uuid,username,email,password,phonenumber)
-        VALUES (?,'test','test','test',1);"#,
-        id.to_string()
-    )
-    .execute(&pool)
-    .await;
-    match _query {
-        Ok(_query) => assert!(true),
-        Err(_query) => {
-            panic!("ERROR ADDING A USER: {}", _query)
-        }
-    } 
-}
-
-#[sqlx::test]
-async fn remove_user_from_db_test(pool: MySqlPool){
-    let _query =sqlx::query(
-        r#"
-        DELETE FROM db
-        WHERE uuid = 'test';"#,
-    )
-    .execute(&pool)
-    .await;
-    match _query {
-        Ok(_query) => assert!(true),
-        Err(_query) => {
-            panic!("ERROR REMOVING A USER: {}", _query)
-        }
-    } 
-}
-
-#[sqlx::test]
-async fn edit_table_test(pool: MySqlPool){
-    
-    let password: String = String::from("test");
-    let username: String = String::from("test");
-    //Adds a test user for a correct edit
-    sqlx::query!(
-        r#"
-        INSERT INTO db (uuid,username,email,password,phonenumber)
-        VALUES (1,'test','test',?,1);"#,
-        User::hash_password(&password)
-        )
-        .execute(&pool)
-        .await
-        .unwrap();
-
-    let _query = sqlx::query!(
-        r#"
-        UPDATE db
-        SET password = ?
-        WHERE username = ?
-        AND password = ?;"#,
-        "newPassword",
-        username,
-        User::hash_password("password")
-        )
-        .execute(&pool)
-        .await;
-    
-    match _query {
-        Ok(_query) => assert!(true),
-        Err(_query) => {
-            panic!("ERROR EDITING DATABASE: {}",_query)
-        }
-    }
-}
-
 #[sqlx::test]
 async fn return_table_test(pool: MySqlPool){
     let _table = sqlx::query!(

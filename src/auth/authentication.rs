@@ -7,8 +7,6 @@ use hmac::{Hmac, NewMac};
 use rocket::outcome::Outcome;
 use rocket::http::Status;
 use rocket::request::{self, Request, FromRequest};
-use serde::Deserialize;
-use serde::Serialize;
 
 pub struct JwtToken {
     pub user_id: i32,
@@ -44,7 +42,7 @@ impl<'r> FromRequest<'r> for JwtToken{
 
 impl JwtToken {
 
-    pub fn encode(user_id: i32) -> String{
+    pub fn _encode(user_id: i32) -> String{
         let secret_key: String = String::from("secret");
         let key: Hmac<Sha256> = Hmac::new_varkey(
             &secret_key.as_bytes()
@@ -73,35 +71,6 @@ impl JwtToken {
             }
         }
 }
-
-#[derive(FromForm,Serialize,Deserialize)]
-pub struct User{
-    pub email: String,
-    pub phonenumber: String,
-    pub username: String,
-    pub password: String
-}
-
-#[derive(FromForm,Serialize,Deserialize)]
-pub struct NewUser{
-    pub new_password: String,
-    pub username: String,
-    pub old_password:String
-
-}
-
-impl User{
-    pub fn hash_password(unhashed_password: &str) -> String{
-        let cost: u32 = 10;
-        let hashed_password = bcrypt::hash(unhashed_password,cost).unwrap();
-        hashed_password
-    }
-
-    pub fn verify_password(&self, password: &str) -> bool{
-        bcrypt::verify(&self.password, &password).unwrap()
-    }
-}
-
 #[test]
 fn encode_and_decode_from_correct_token(){
     let message: String =String::from("test");
@@ -125,16 +94,5 @@ fn encode_and_decode_from_incorrect_token(){
 
     let decode_claims: BTreeMap<String,String> = token_str.verify_with_key(&key).unwrap();
     assert_ne!(decode_claims["user"],"incorrect token");
-}
-
-#[test]
-fn hash_and_verify_password(){
-    let unhashed_password = String::from("test");
-    let cost: u32 = 10;
-    let hashed_password = bcrypt::hash(unhashed_password,cost).unwrap();
-    println!("{}",hashed_password);
-    let verify = bcrypt::verify("test", &hashed_password).unwrap();
-    
-    assert_eq!(verify,true);
 }
 

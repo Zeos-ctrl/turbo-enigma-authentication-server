@@ -3,8 +3,9 @@ mod connections;
 mod api;
 
 use rocket::fs::{FileServer, relative};
-use connections::connect::{ReRouter,create_table,return_table,drop};
-use api::api::{login,register,remove_account,edit_account};
+use connections::connect::ReRouter;
+use api::api::{login,register,remove_account,edit_account,create_table};
+use api::api_guards::{homepage_accept,signout};
 
 #[macro_use] extern crate rocket;
 
@@ -14,9 +15,9 @@ async fn launch_server() -> _ {
     let pool = connections::connect::create_connection().await.unwrap();
 
     rocket::build()
-        .manage(connections::connect::Pool(pool))
-        .mount("/connections", routes![create_table,return_table,drop])
-        .mount("/api", routes![login,register,remove_account,edit_account])
+        .manage(api::api::Pool(pool))
+        .mount("/api", routes![login,register,remove_account,edit_account,create_table])
+        .mount("/", routes![homepage_accept,signout])
         .mount("/", FileServer::from(relative!("static")))
         .attach(ReRouter)
     }

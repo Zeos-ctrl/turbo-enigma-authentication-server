@@ -4,19 +4,20 @@ use sha2::Sha256;
 use std::collections::BTreeMap;
 use std::result::Result;
 use hmac::{Hmac, NewMac};
-use rocket::outcome::Outcome;
 use rocket::http::Status;
 use rocket::request::{self, Request, FromRequest};
+use rocket::outcome::Outcome;
 
+#[derive(Debug)]
 pub struct JwtToken {
-    pub user_id: i32,
+    pub user_id: String,
     pub body: String
 }
 
 #[derive(Debug)]
 pub enum ApiKeyError{
-    BadCount,
-    Missing,
+    //BadCount,
+    //Missing,
     Invalid,
 }
 
@@ -24,8 +25,8 @@ pub enum ApiKeyError{
 impl<'r> FromRequest<'r> for JwtToken{
     type Error = ApiKeyError;
 
-    async fn from_request(req: &'r Request<'_>) -> request::Outcome<Self,Self::Error> {
-        let keys: Vec<_> = req.headers().get("JwtToken").collect();
+/*    async fn _from_request(req: &'r Request<'_>) -> request::Outcome<Self,Self::Error> {
+        let keys: Vec<_> = req.headers().get("token").collect();
         match keys.len() {
             0 => Outcome::Failure((Status::BadRequest, ApiKeyError::Missing)),
             1 => {
@@ -38,11 +39,22 @@ impl<'r> FromRequest<'r> for JwtToken{
             _ => Outcome::Failure((Status::BadRequest, ApiKeyError::BadCount)),
         }
     }
-}
+*/    
+    async fn from_request(req: &'r Request<'_>) -> request::Outcome<Self,Self::Error> {
+        let token = req.cookies().get("token").unwrap();
+        let token_value = token.value().to_string();
 
+        let decoded = JwtToken::decode(token_value);
+
+        match decoded {
+            Ok(decoded) => Outcome::Success(decoded),
+            Err(_) => Outcome::Failure((Status::Unauthorized, ApiKeyError::Invalid))
+        }
+    }
+}
 impl JwtToken {
 
-    pub fn _encode(user_id: i32) -> String{
+    pub fn encode(user_id: &String) -> String{
         let secret_key: String = String::from("secret");
         let key: Hmac<Sha256> = Hmac::new_varkey(
             &secret_key.as_bytes()
@@ -61,19 +73,20 @@ impl JwtToken {
             )
             .unwrap();
         let token_str: &str = webtoken.as_str();
-        let token: Result<Token<Header, BTreeMap<String, i32>, _ > ,jwt::Error> = 
-            VerifyWithKey::verify_with_key(token_str, &key);
+        let token: Result<Token<Header, BTreeMap<String, String>, _ > ,jwt::Error> = 
+            token_str.verify_with_key(&key);
         match token {
             Ok(token) => Ok( JwtToken {
-                user_id: token.claims() ["user_id"],
+                user_id: token.claims() ["user_id"].to_string(),
                 body: webtoken}),
             Err(_) => Err("Couldnt Decode token")
             }
         }
-}
+    }
+
 #[test]
 fn encode_and_decode_from_correct_token(){
-    let message: String =String::from("test");
+    let message: String = String::from("test");
     let key: Hmac<Sha256> = Hmac::new_varkey(&message.as_bytes()).unwrap();
     let mut claims = BTreeMap::new();
     claims.insert("sub","test");

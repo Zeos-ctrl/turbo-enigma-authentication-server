@@ -1,5 +1,7 @@
 use super::super::auth::account::{User,NewUser,Login,Verify};
-use super::super::auth::authentication::JwtToken;
+use super::super::auth::jwt::JwtToken;
+use super::super::auth::otp::gen_token;
+use super::super::auth::captcha::gen_captcha;
 use sqlx::MySqlPool;
 use sqlx::mysql::MySqlPoolOptions;
 use rocket::form::Form;
@@ -33,22 +35,27 @@ pub async fn login(pool: &State<Pool>,jar: &CookieJar<'_>, login: Form<Login>) -
 
 #[post("/add", data = "<user>")]
 pub async fn register(pool: &State<Pool>, user: Form<User>) -> Redirect{
-    let id = Uuid::new_v4();
-    sqlx::query!(
-        r#"
-        INSERT INTO db (uuid,username,email,password,phonenumber)
-        VALUES (?,?,?,?,?);"#,
-        id.to_string(),
-        &user.username,
-        &user.email,
-        User::hash_password(&user.password),
-        &user.phonenumber
-    )
-    .execute(&pool.0)
-    .await
-    .unwrap();
-    
-    Redirect::to(uri!("/index.html"))
+    if user.captcha == gen_captcha() {
+        let id = Uuid::new_v4();
+        sqlx::query!(
+            r#"
+            INSERT INTO db (uuid,username,email,password,phonenumber,seconds)
+            VALUES (?,?,?,?,?,?);"#,
+            id.to_string(),
+            &user.username,
+            &user.email,
+            User::hash_password(&user.password),
+            &user.phonenumber,
+            gen_token(&user.email) 
+        )
+        .execute(&pool.0)
+        .await
+        .unwrap();
+        
+        Redirect::to(uri!("/index.html"))
+    }else{
+        Redirect::to(uri!("/index.html"))
+    }
 
 }
 
@@ -92,6 +99,7 @@ pub async fn create_table(pool: &State<Pool>){
     email varchar(255) NOT NULL,
     password varchar(255) NOT NULL,
     phonenumber int,
+    seconds int,
     CONSTRAINT db UNIQUE (username,email)
     );"#,
     )

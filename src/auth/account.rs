@@ -6,7 +6,8 @@ pub struct User{
     pub email: String,
     pub phonenumber: String,
     pub username: String,
-    pub password: String
+    pub password: String,
+    pub captcha: String
 }
 
 #[derive(FromForm,Serialize,Deserialize)]

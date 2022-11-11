@@ -1,6 +1,6 @@
 use rocket::response::{Flash,Redirect};
 use rocket::http::{Cookie,CookieJar};
-use super::super::auth::authentication::JwtToken;
+use super::super::auth::jwt::JwtToken;
 
 #[get("/homepage")]
 pub async fn homepage_accept(_jwt: JwtToken) -> Redirect{

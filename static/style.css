@@ -43,6 +43,14 @@ header {
     padding: 5px 5%;
 }
 
+.captcha {
+    background-image: url('./captcha/captcha.png');
+    width: 200px;
+    height: 110px;
+    display: flex;
+    margin: 10px auto;
+}
+
 .nav_links {
     list-style: none;
 }

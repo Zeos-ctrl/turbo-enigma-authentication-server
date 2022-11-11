@@ -4,5 +4,6 @@ CREATE TABLE IF NOT EXISTS db (
     email varchar(255) NOT NULL,
     password varchar(255) NOT NULL,
     phonenumber INT,
+    seconds INT,
     CONSTRAINT db UNIQUE (username,email)
 );

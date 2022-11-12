@@ -1,5 +1,7 @@
 use super::super::auth::account::{User,NewUser,Login,Verify};
 use super::super::auth::jwt::JwtToken;
+use super::super::auth::otp::verify_totp;
+use totp_rs::Secret;
 use sqlx::MySqlPool;
 use sqlx::mysql::MySqlPoolOptions;
 use rocket::form::Form;
@@ -12,40 +14,47 @@ pub struct Pool(pub MySqlPool);
 
 #[post("/login", data = "<login>")]
 pub async fn login(pool: &State<Pool>,jar: &CookieJar<'_>, login: Form<Login>) -> Flash<Redirect>{
-    let user = sqlx::query!(
-        r#"
-        SELECT *
-        FROM db
-        WHERE username = ?;
-        "#,
-        &login.username
-        )
-        .fetch_one(&pool.0)
-        .await
-        .unwrap();
-    if login.verify_password(&user.password){
-        jar.add(Cookie::new("token", JwtToken::encode(&user.uuid)));
-        Flash::success(Redirect::to(uri!("/homepage")), "Correct credentials")
+    let secret = String::from("KRSXG5CTMVRXEZLUKN2XAZLSKNSWG4TFOQ");
+    if verify_totp(secret,&login.otp){
+        let user = sqlx::query!(
+            r#"
+            SELECT *
+            FROM db
+            WHERE username = ?;
+            "#,
+            &login.username
+            )
+            .fetch_one(&pool.0)
+            .await
+            .unwrap();
+        if login.verify_password(&user.password){
+            jar.add(Cookie::new("token", JwtToken::encode(&user.uuid)));
+            Flash::success(Redirect::to(uri!("/homepage")), "Correct credentials")
+        }else{
+            Flash::error(Redirect::to(uri!("/index.html")), "Incorrect credentials")
+        }
     }else{
-        Flash::error(Redirect::to(uri!("/index.html")), "Incorrect credentials")
+        Flash::error(Redirect::to(uri!("/index.html")),"Incorrect OTP")
     }
 }
 
 #[post("/add", data = "<user>")]
 pub async fn register(pool: &State<Pool>,jar: &CookieJar<'_>, user: Form<User>) -> Redirect{
     let captcha = jar.get("captcha").unwrap().to_string();
+    let secret = Secret::Encoded("KRSXG5CTMVRXEZLUKN2XAZLSKNSWG4TFOQ".to_string()).to_bytes().unwrap();
     println!("{}",&captcha[8..]);
     if user.captcha == captcha[8..] {
         let id = Uuid::new_v4();
         sqlx::query!(
             r#"
-            INSERT INTO db (uuid,username,email,password,phonenumber)
-            VALUES (?,?,?,?,?);"#,
+            INSERT INTO db (uuid,username,email,password,phonenumber,secret)
+            VALUES (?,?,?,?,?,?);"#,
             id.to_string(),
             &user.username,
             &user.email,
             User::hash_password(&user.password),
             &user.phonenumber,
+            secret
         )
         .execute(&pool.0)
         .await

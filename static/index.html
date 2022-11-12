@@ -36,6 +36,8 @@
                     <input type="text" name="username" id="username" placeholder="Enter Username">
                     <label for="password">Password</label>
                     <input type="text" name="password" id="password" placeholder="Enter Password">
+                    <label for="otp">otp</label>
+                    <input type="text" name="otp" id="otp" placeholder="Enter OTP">
                     <div class="form-element">
                         <input id="submit" type="submit" value="Submit" />
                     </div>
@@ -62,7 +64,9 @@
                     <input type="password" id="password" name="password"  placeholder="Enter Password">
                     <label for="password">Confirm Password</label>
                     <input type="password" id="confirmpassword" placeholder="Confirm Password">
-                    <div class = "captcha"></div>
+                    <div class = "captcha">
+                        <img id="captchaimg" src="#">
+                    </div>
                     <input type="text" id="captcha" name="captcha" placeholder="captcha">
                     <div class="form-element">
                         <input id="submitRegister" type="submit" value="Submit" />
@@ -70,8 +74,14 @@
                 </form>
             </div>
             <div class="form-element">
-                <a href="#">I Forgor?</a>
+                <a id = "otp" href="#">Get One Time Password QR</a>
             </div>
+        </div>
+    </div>
+    <div class = "popupqr">
+        <div class = "close-btn">&times;</div>
+        <div class = "qr">
+            <img id = "qr" src = "#" />
         </div>
     </div>
     <script type="text/javascript">
@@ -80,17 +90,26 @@
             document.querySelector(".popup").classList.add("active");
         });
         document.querySelector("#register").addEventListener("click", () => {
-            /*httpGetAsync("http://127.0.0.1:8000/gen_captcha", function(result){
-                console.log(result);
-            });*/
+            httpGetAsync("http://127.0.0.1:8000/gen_captcha", function(result){
+                document.getElementById("captchaimg").src = result;
+            });
             document.querySelector(".popup").classList.remove("active");
             document.querySelector(".popupregister").classList.add("active");
+        });
+        document.querySelector("#otp").addEventListener("click", () => {
+            httpGetAsync("http://127.0.0.1:8000/gen_qr", function(result){
+                document.getElementById("qr").src = result;
+            });
+            document.querySelector(".popupqr").classList.add("active");
         });
         document.querySelector(".popup .close-btn").addEventListener("click", () => {
             document.querySelector(".popup").classList.remove("active");
         });
         document.querySelector(".popupregister .close-btn").addEventListener("click", () => {
             document.querySelector(".popupregister").classList.remove("active");
+        });
+        document.querySelector(".popupqr .close-btn").addEventListener("click", () => {
+            document.querySelector(".popupqr").classList.remove("active");
         });
 
         function httpGetAsync(theUrl, callback){

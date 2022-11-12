@@ -1,7 +1,8 @@
 use captcha_rs::CaptchaBuilder;
+use rocket::http::{CookieJar, Cookie};
 
-#[get("/captcha")]
-pub fn gen_captcha() -> String{
+#[get("/gen_captcha")]
+pub fn gen_captcha(jar: &CookieJar<'_>){
     let captcha = CaptchaBuilder::new()
         .length(5)
         .width(220)
@@ -16,7 +17,7 @@ pub fn gen_captcha() -> String{
     let img = image::load_from_memory_with_format(&image_data,image::ImageFormat::Png).unwrap();
     img.save("./../static/captcha/captcha.png").unwrap();
 
-    captcha.text
+    jar.add(Cookie::new("captcha", captcha.text));
 }
 
 #[test]

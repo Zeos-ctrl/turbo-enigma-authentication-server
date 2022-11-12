@@ -1,7 +1,5 @@
 use super::super::auth::account::{User,NewUser,Login,Verify};
 use super::super::auth::jwt::JwtToken;
-use super::super::auth::otp::gen_token;
-use super::super::auth::captcha::gen_captcha;
 use sqlx::MySqlPool;
 use sqlx::mysql::MySqlPoolOptions;
 use rocket::form::Form;
@@ -34,19 +32,20 @@ pub async fn login(pool: &State<Pool>,jar: &CookieJar<'_>, login: Form<Login>) -
 }
 
 #[post("/add", data = "<user>")]
-pub async fn register(pool: &State<Pool>, user: Form<User>) -> Redirect{
-    if user.captcha == gen_captcha() {
+pub async fn register(pool: &State<Pool>,jar: &CookieJar<'_>, user: Form<User>) -> Redirect{
+    let captcha = jar.get("captcha").unwrap().to_string();
+    println!("{}",&captcha[8..]);
+    if user.captcha == captcha[8..] {
         let id = Uuid::new_v4();
         sqlx::query!(
             r#"
-            INSERT INTO db (uuid,username,email,password,phonenumber,seconds)
-            VALUES (?,?,?,?,?,?);"#,
+            INSERT INTO db (uuid,username,email,password,phonenumber)
+            VALUES (?,?,?,?,?);"#,
             id.to_string(),
             &user.username,
             &user.email,
             User::hash_password(&user.password),
             &user.phonenumber,
-            gen_token(&user.email) 
         )
         .execute(&pool.0)
         .await

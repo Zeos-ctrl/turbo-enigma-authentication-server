@@ -44,7 +44,7 @@ header {
 }
 
 .captcha {
-    background-image: url('./captcha/captcha.png');
+    background-image: url('./captcha/captcha.png?');
     width: 200px;
     height: 110px;
     display: flex;

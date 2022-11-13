@@ -13,9 +13,6 @@ pub struct User{
 #[derive(FromForm,Serialize,Deserialize)]
 pub struct NewUser{
     pub new_password: String,
-    pub username: String,
-    pub old_password:String
-
 }
 
 #[derive(FromForm,Serialize,Deserialize)]

@@ -68,12 +68,13 @@ pub async fn register(pool: &State<Pool>,jar: &CookieJar<'_>, user: Form<User>) 
 }
 
 #[delete("/remove")]
-pub async fn remove_account(pool: &State<Pool>, token: JwtToken) {
+pub async fn remove_account(pool: &State<Pool>, token: JwtToken){
+    let decoded = JwtToken::decode(token.body).unwrap();
     sqlx::query!(
         r#"
         DELETE FROM db
-        WHERE username = ?;"#,
-        &token.user_id
+        WHERE uuid = ?;"#,
+        &decoded.user_id
     )
     .execute(&pool.0)
     .await
@@ -86,11 +87,9 @@ pub async fn edit_account(pool: &State<Pool>, token: JwtToken, newuser: Form<New
         r#"
         UPDATE db
         SET password = ?
-        WHERE uuid = ?
-        AND password = ?;"#,
-        &newuser.new_password,
-        &token.user_id,
-        User::hash_password(&newuser.old_password)
+        WHERE uuid = ?;"#,
+        User::hash_password(&newuser.new_password),
+        &token.user_id
         )
         .execute(&pool.0)
         .await

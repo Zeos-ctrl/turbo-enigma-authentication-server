@@ -15,6 +15,7 @@
         <nav>
             <ul class = "nav_links">
                 <li><a action="/signout" href="/signout" id="signout">Sign Out</a></li>
+                <li><a href="#" id="accountlink">Account</a></li>
             </ul>
         </nav>
     </header>
@@ -45,6 +46,82 @@
     </section>
 
     <div class = "spacer layer4"></div>
+
+    <div class = "account">
+        <div class = "close-btn">&times;</div>
+        <div class="form">
+            <h2>Account Dashboard</h2>
+            <div class="form-element">
+                <input id="edit" type="submit" value="Change Password" />
+                <input id="delete" type="submit" value="Delete Account" />
+            </div>
+        </div>
+    </div>
+
+    <div class = "popup">
+        <div class = "close-btn">&times;</div>
+        <div class = "form">
+            <h2>Change password</h2>
+            <div class = "form-element">
+                <form method="post" action="/api/edit" name = "input">
+                    <label for="password">Password</label>
+                    <input type="text" name="new_password" id="new_password" placeholder="Enter Password">
+                    <label for="password">Confirm Password</label>
+                    <input type="text"  id="password" placeholder="Confirm Password">
+                    <div class="form-element">
+                        <input id="submit" type="submit" value="Submit" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class = "popup2">
+        <div class = "close-btn">&times;</div>
+        <div class = "form">
+            <h2>Are you sure?</h2>
+            <p class="blackfont">This change is permanent and your account will be lost</p>
+            <div class = "form-element">
+                <input id="goback" type="submit" value="Go Back" />
+                <input id="deleteconfirm" type="submit" value="Im Sure Delete Account" />
+            </div>
+        </div>
+    </div>
+    <script>
+        document.querySelector("#accountlink").addEventListener("click",() => {
+            document.querySelector(".account").classList.add("active");
+        });
+        document.querySelector(".account .close-btn").addEventListener("click", () => {
+            document.querySelector(".account").classList.remove("active");
+        });
+        document.querySelector("#edit").addEventListener("click",() => {
+            document.querySelector(".account").classList.remove("active");
+            document.querySelector(".popup").classList.add("active");
+        });
+        document.querySelector(".popup .close-btn").addEventListener("click", () => {
+            document.querySelector(".popup").classList.remove("active");
+        });
+        document.querySelector("#delete").addEventListener("click",() => {
+            document.querySelector(".account").classList.remove("active");
+            document.querySelector(".popup2").classList.add("active");
+        });
+        document.querySelector(".popup2 .close-btn").addEventListener("click", () => {
+            document.querySelector(".popup2").classList.remove("active");
+        });
+        document.querySelector("#goback").addEventListener("click",() => {
+            document.querySelector(".popup2").classList.remove("active");
+            document.querySelector(".account").classList.add("active");
+        });
+        document.querySelector("#deleteconfirm").addEventListener("click",() => {
+            httpDelete("http://127.0.0.1:8000/api/remove"); 
+        });
+        
+        function httpDelete(theUrl){
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open("DELETE", theUrl, true); // true for asynchronous 
+            xmlHttp.send(null);
+        }
+    </script>
 
 </body>
 </html>

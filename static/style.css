@@ -33,6 +33,7 @@ li,a,button,input[type="submit"] {
     color: white;
     text-decoration: none;
     padding: 0px 10px;
+    margin-top: 10px;
 }
 
 header {
@@ -115,6 +116,22 @@ header {
     background: #fe8019;
 }
 
+#delete{
+    background-color: #cc241d;
+    font-weight: bold;
+}
+
+#deleteconfirm{
+    background-color: #cc241d;
+    font-weight: bold;
+}
+
+.blackfont {
+    color: black;
+    font-weight: Bold;
+    text-align: center;
+}
+
 .button_header {
     margin-left: 20px;
     padding: 9px 25px;
@@ -155,7 +172,7 @@ header {
 .full {
     height: 100vh;
 }
-.popupregister {
+.popup2 {
     position: absolute;
     top: -150%;
     left: 50%;
@@ -171,7 +188,7 @@ header {
                 transform 200ms ease-in-out 0ms;
 }
 
-.popupregister.active {
+.popup2.active {
     top:50%;
     opacity:1;
     transform:translate(-50%,-50%) scale(1);
@@ -197,6 +214,31 @@ header {
 }
 
 .popupqr.active {
+    top:50%;
+    opacity:1;
+    transform:translate(-50%,-50%) scale(1);
+    transition: top 0ms ease-in-out 0ms,
+                opacity 200ms ease-in-out 0ms,
+                transform 200ms ease-in-out 0ms;
+}
+
+.account {
+    position: absolute;
+    top: -150%;
+    left: 50%;
+    opacity:0;
+    transform:translate(-50%,-50%) scale(1.25);
+    width: 460px;
+    padding: 20px 30px;
+    background: #fff;
+    box-shadow: 2px 2px 5px 5px rgba(0,0,0,0.15);
+    border-radius:10px;
+    transition: top 0ms ease-in-out 200ms,
+                opacity 200ms ease-in-out 0ms,
+                transform 200ms ease-in-out 0ms;
+}
+
+.account.active {
     top:50%;
     opacity:1;
     transform:translate(-50%,-50%) scale(1);
@@ -293,7 +335,7 @@ header {
     font-weight: 600;
 }
 
-.popupregister .close-btn {
+.popup2 .close-btn {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -307,24 +349,24 @@ header {
     cursor: pointer;
 }
 
-.popupregister .form h2 {
+.popup2 .form h2 {
     text-align: center;
     color: #222;
     margin: 10px 0px 20px;
     font-size: 25px;
 }
 
-.popupregister .form .form-element {
+.popup2 .form .form-element {
     margin: 15px 0px;
 }
 
-.popupregister .form .form-element label {
+.popup2 .form .form-element label {
     font-size: 14px;
     color: #222;
 }
 
-.popupregister .form .form-element input[type="text"],
-.popupregister .form .form-element input[type="password"] {
+.popup2 .form .form-element input[type="text"],
+.popup2 .form .form-element input[type="password"] {
     margin-top: 5px;
     display:block;
     width: 94%;
@@ -334,7 +376,7 @@ header {
     border-radius: 5px;
 }
 
-.popupregister .form .form-element input[type="submit"]{
+.popup2 .form .form-element input[type="submit"]{
     width:100%;
     height: 40px;
     border: none;
@@ -346,7 +388,7 @@ header {
     cursor: pointer;
 }
 
-.popupregister .form .form-element a {
+.popup2 .form .form-element a {
     display:block;
     text-align: right;
     font-size: 15px;
@@ -369,3 +411,43 @@ header {
     cursor: pointer;
 }
 
+.account .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 15px;
+    height: 15px;
+    background: #888;
+    color: #eee;
+    text-align: center;
+    line-height: 15px;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+
+.account .form h2 {
+    text-align: center;
+    color: #222;
+    margin: 10px 0px 20px;
+    font-size: 25px;
+}
+
+.account .form .form-element {
+    margin: 15px 0px;
+}
+
+.account .form .form-element input[type="submit"]{
+    margin-top: 10px;
+    padding: 10px;
+    display:block;
+    width:100%;
+    height: 40px;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    background: #222;
+    color: #f5f5f5;
+    border-radius: 10px;
+    cursor: pointer;
+}

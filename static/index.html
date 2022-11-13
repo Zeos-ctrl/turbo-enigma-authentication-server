@@ -48,7 +48,7 @@
         </div>
         </div>
     </div>
-    <div class = "popupregister">
+    <div class = "popup2">
         <div class = "close-btn">&times;</div>
         <div class = "form">
             <h2>Register</h2>
@@ -65,7 +65,7 @@
                     <label for="password">Confirm Password</label>
                     <input type="password" id="confirmpassword" placeholder="Confirm Password">
                     <div class = "captcha">
-                        <img id="captchaimg" src="#">
+                        <img id="captchaimg" src="#" alt="">
                     </div>
                     <input type="text" id="captcha" name="captcha" placeholder="captcha">
                     <div class="form-element">
@@ -74,19 +74,19 @@
                 </form>
             </div>
             <div class="form-element">
-                <a id = "otp" href="#">Get One Time Password QR</a>
+                <a class="otp "id = "otp" href="#">Get One Time Password QR</a>
             </div>
         </div>
     </div>
     <div class = "popupqr">
         <div class = "close-btn">&times;</div>
         <div class = "qr">
-            <img id = "qr" src = "#" />
+            <img id = "qr" src = "#"/>
         </div>
     </div>
     <script type="text/javascript">
         document.querySelector("#login").addEventListener("click",() => {
-            document.querySelector(".popupregister").classList.remove("active");
+            document.querySelector(".popup2").classList.remove("active");
             document.querySelector(".popup").classList.add("active");
         });
         document.querySelector("#register").addEventListener("click", () => {
@@ -94,9 +94,9 @@
                 document.getElementById("captchaimg").src = result;
             });
             document.querySelector(".popup").classList.remove("active");
-            document.querySelector(".popupregister").classList.add("active");
+            document.querySelector(".popup2").classList.add("active");
         });
-        document.querySelector("#otp").addEventListener("click", () => {
+        document.querySelector(".otp").addEventListener("click", () => {
             httpGetAsync("http://127.0.0.1:8000/gen_qr", function(result){
                 document.getElementById("qr").src = result;
             });
@@ -105,8 +105,8 @@
         document.querySelector(".popup .close-btn").addEventListener("click", () => {
             document.querySelector(".popup").classList.remove("active");
         });
-        document.querySelector(".popupregister .close-btn").addEventListener("click", () => {
-            document.querySelector(".popupregister").classList.remove("active");
+        document.querySelector(".popup2 .close-btn").addEventListener("click", () => {
+            document.querySelector(".popup2").classList.remove("active");
         });
         document.querySelector(".popupqr .close-btn").addEventListener("click", () => {
             document.querySelector(".popupqr").classList.remove("active");

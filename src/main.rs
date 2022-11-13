@@ -1,6 +1,7 @@
 mod auth;
 mod connections;
 mod api;
+mod catchers;
 
 use rocket::fs::{FileServer, relative};
 use connections::connect::ReRouter;
@@ -8,6 +9,7 @@ use api::api::{login,register,remove_account,edit_account,create_table};
 use api::api_guards::{homepage_accept,signout};
 use auth::captcha::gen_captcha;
 use auth::otp::gen_qr;
+use catchers::catchers::{not_found,server_error,invalid_form};
 
 #[macro_use] extern crate rocket;
 
@@ -18,6 +20,7 @@ async fn launch_server() -> _ {
 
     rocket::build()
         .manage(api::api::Pool(pool))
+        .register("/", catchers![not_found,server_error,invalid_form])
         .mount("/api", routes![login,register,remove_account,edit_account,create_table])
         .mount("/", routes![homepage_accept,signout,gen_captcha,gen_qr])
         .mount("/", FileServer::from(relative!("static")))

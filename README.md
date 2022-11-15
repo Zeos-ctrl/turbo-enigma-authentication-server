@@ -10,9 +10,9 @@ sudo docker build -t server .
 
 sudo docker compose up
 ```
-\###TO DO LIST
+###TO DO LIST
 
-- [] Add better comments
-- [] Get rid of the majority of unwraps
-- [] Database Migration Scripts
-- [] TLS
+- [ ] Add better comments
+- [ ] Get rid of the majority of unwraps
+- [ ] Database Migration Scripts
+- [ ] TLS

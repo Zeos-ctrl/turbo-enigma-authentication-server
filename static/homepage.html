@@ -113,11 +113,17 @@
             document.querySelector(".account").classList.add("active");
         });
         document.querySelector("#deleteconfirm").addEventListener("click",() => {
-            httpDelete("http://127.0.0.1:8000/api/remove"); 
+            httpDelete("http://127.0.0.1:8000/api/remove",function(result){
+                document.location = (result);
+            }); 
         });
         
-        function httpDelete(theUrl){
+        function httpDelete(theUrl,callback){
             var xmlHttp = new XMLHttpRequest();
+            xmlHttp.onreadystatechange = function() { 
+                if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+                    callback(xmlHttp.responseText);
+            }
             xmlHttp.open("DELETE", theUrl, true); // true for asynchronous 
             xmlHttp.send(null);
         }

@@ -1,1 +1,3 @@
-DROP TABLE db;
+USE db;
+
+DROP TABLE users;

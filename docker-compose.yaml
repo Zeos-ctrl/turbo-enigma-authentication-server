@@ -1,0 +1,43 @@
+version: "3.1"
+
+services:
+  mysql:
+    container_name: "mysql"
+    image: mysql:latest
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: db
+      MYSQL_HOST: "127.0.0.1"
+    ports: 
+      - "3306:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+    restart: always
+    expose:
+      - 3306
+
+  server:
+    container_name: "server"
+    image: server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mysql
+    restart: always
+    links:
+      - "mysql"
+
+  nginx:
+    container_name: "nginx-rust"
+    image: "nginx:latest"
+    ports:
+      - "80:80"
+    links:
+      - server
+    depends_on:
+      - server
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf

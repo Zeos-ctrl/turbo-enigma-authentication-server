@@ -3,12 +3,13 @@ use super::super::auth::jwt::JwtToken;
 use super::super::auth::otp::verify_totp;
 use totp_rs::Secret;
 use sqlx::MySqlPool;
-use sqlx::mysql::MySqlPoolOptions;
 use rocket::form::Form;
 use rocket::response::{Flash,Redirect};
 use rocket::http::{Cookie,CookieJar};
 use rocket::State;
 use uuid::Uuid;
+use log::{error, info};
+
 
 pub struct Pool(pub MySqlPool);
 
@@ -19,7 +20,7 @@ pub async fn login(pool: &State<Pool>,jar: &CookieJar<'_>, login: Form<Login>) -
         let user = sqlx::query!(
             r#"
             SELECT *
-            FROM db
+            FROM users
             WHERE username = ?;
             "#,
             &login.username
@@ -29,11 +30,14 @@ pub async fn login(pool: &State<Pool>,jar: &CookieJar<'_>, login: Form<Login>) -
             .unwrap();
         if login.verify_password(&user.password){
             jar.add(Cookie::new("token", JwtToken::encode(&user.uuid)));
+            info!("Logged in user: {}", &login.username);
             Flash::success(Redirect::to(uri!("/homepage")), "Correct credentials")
         }else{
+            error!("Incorrect login credentials for: {}", &login.username);
             Flash::error(Redirect::to(uri!("/index.html")), "Incorrect credentials")
         }
     }else{
+        error!("Incorrect OTP during login for: {}", &login.username);
         Flash::error(Redirect::to(uri!("/index.html")),"Incorrect OTP")
     }
 }
@@ -42,12 +46,11 @@ pub async fn login(pool: &State<Pool>,jar: &CookieJar<'_>, login: Form<Login>) -
 pub async fn register(pool: &State<Pool>,jar: &CookieJar<'_>, user: Form<User>) -> Redirect{
     let captcha = jar.get("captcha").unwrap().to_string();
     let secret = Secret::Encoded("KRSXG5CTMVRXEZLUKN2XAZLSKNSWG4TFOQ".to_string()).to_bytes().unwrap();
-    println!("{}",&captcha[8..]);
     if user.captcha == captcha[8..] {
         let id = Uuid::new_v4();
         sqlx::query!(
             r#"
-            INSERT INTO db (uuid,username,email,password,phonenumber,secret)
+            INSERT INTO users (uuid,username,email,password,phonenumber,secret)
             VALUES (?,?,?,?,?,?);"#,
             id.to_string(),
             &user.username,
@@ -59,33 +62,36 @@ pub async fn register(pool: &State<Pool>,jar: &CookieJar<'_>, user: Form<User>) 
         .execute(&pool.0)
         .await
         .unwrap();
-        
+        info!("Registered new user: {}", &user.username); 
         Redirect::to(uri!("/index.html"))
     }else{
+        error!("Couldn't register user: {}", &user.username);
         Redirect::to(uri!("/index.html"))
     }
 
 }
 
 #[delete("/remove")]
-pub async fn remove_account(pool: &State<Pool>, token: JwtToken){
+pub async fn remove_account(pool: &State<Pool>, token: JwtToken) -> String{
     let decoded = JwtToken::decode(token.body).unwrap();
     sqlx::query!(
         r#"
-        DELETE FROM db
+        DELETE FROM users
         WHERE uuid = ?;"#,
         &decoded.user_id
     )
     .execute(&pool.0)
     .await
     .unwrap();
+    info!("Removing account: {}", &decoded.user_id);
+    format!("http://127.0.0.1:8000/index.html")
 }
 
 #[post("/edit", data ="<newuser>")]
-pub async fn edit_account(pool: &State<Pool>, token: JwtToken, newuser: Form<NewUser>){
+pub async fn edit_account(pool: &State<Pool>, token: JwtToken, newuser: Form<NewUser>) -> Redirect{
     sqlx::query!(
         r#"
-        UPDATE db
+        UPDATE users
         SET password = ?
         WHERE uuid = ?;"#,
         User::hash_password(&newuser.new_password),
@@ -94,20 +100,22 @@ pub async fn edit_account(pool: &State<Pool>, token: JwtToken, newuser: Form<New
         .execute(&pool.0)
         .await
         .unwrap();
+    info!("Editing account: {}", &token.user_id);
+    Redirect::to(uri!("/homepage.html"))
 }
 
 #[get("/create")]
 pub async fn create_table(pool: &State<Pool>){
     sqlx::query(
     r#"
-    CREATE TABLE IF NOT EXISTS db (
+    CREATE TABLE IF NOT EXISTS users (
     uuid varchar(255) PRIMARY KEY NOT NULL,
     username varchar(255) NOT NULL,
     email varchar(255) NOT NULL,
     password varchar(255) NOT NULL,
     phonenumber int,
     seconds int,
-    CONSTRAINT db UNIQUE (username,email)
+    CONSTRAINT users UNIQUE (username,email)
     );"#,
     )
     .execute(&pool.0)
@@ -116,11 +124,11 @@ pub async fn create_table(pool: &State<Pool>){
 }
 
 #[sqlx::test]
-async fn add_user_to_db_test(pool: MySqlPool){
+async fn add_user_to_users_test(pool: MySqlPool){
     let id = Uuid::new_v4();
     let _query =sqlx::query!(
         r#"
-        INSERT INTO db (uuid,username,email,password,phonenumber)
+        INSERT INTO users (uuid,username,email,password,phonenumber)
         VALUES (?,'test','test','test',1);"#,
         id.to_string()
     )
@@ -135,10 +143,10 @@ async fn add_user_to_db_test(pool: MySqlPool){
 }
 
 #[sqlx::test]
-async fn remove_user_from_db_test(pool: MySqlPool){
+async fn remove_user_from_users_test(pool: MySqlPool){
     let _query =sqlx::query(
         r#"
-        DELETE FROM db
+        DELETE FROM users
         WHERE uuid = 'test';"#,
     )
     .execute(&pool)
@@ -159,7 +167,7 @@ async fn edit_table_test(pool: MySqlPool){
     //Adds a test user for a correct edit
     sqlx::query!(
         r#"
-        INSERT INTO db (uuid,username,email,password,phonenumber)
+        INSERT INTO users (uuid,username,email,password,phonenumber)
         VALUES (1,'test','test',?,1);"#,
         User::hash_password(&password)
         )
@@ -169,7 +177,7 @@ async fn edit_table_test(pool: MySqlPool){
 
     let _query = sqlx::query!(
         r#"
-        UPDATE db
+        UPDATE users
         SET password = ?
         WHERE username = ?
         AND password = ?;"#,
@@ -190,28 +198,16 @@ async fn edit_table_test(pool: MySqlPool){
 
 
 #[sqlx::test]
-async fn create_connection_test(){
-    let _pool = MySqlPoolOptions::new()
-        .max_connections(5)
-        .connect("mysql://root:password@localhost/db")
-        .await;
-    match _pool{
-        Ok(_pool) => assert!(true),
-        Err(_pool) => assert!(false)
-    }
-}
-
-#[sqlx::test]
 async fn create_table_test(pool: MySqlPool){
     let _query =sqlx::query(
         r#"
-        CREATE TABLE IF NOT EXISTS db (
+        CREATE TABLE IF NOT EXISTS users (
         uuid varchar(255) PRIMARY KEY NOT NULL,
         username varchar(255) NOT NULL,
         email varchar(255) NOT NULL,
         password varchar(255) NOT NULL,
         phonenumber INT,
-        CONSTRAINT db UNIQUE (username,email)
+        CONSTRAINT users UNIQUE (username,email)
         );"#,
     )
     .execute(&pool)
@@ -228,7 +224,7 @@ async fn return_table_test(pool: MySqlPool){
     let _table = sqlx::query!(
         r#"
         SELECT *
-        FROM db
+        FROM users
         "#
         )
         .fetch_all(&pool)

@@ -7,17 +7,11 @@ pub fn gen_captcha(jar: &CookieJar<'_>) -> String{
         .length(5)
         .width(220)
         .height(110)
-        .dark_mode(false)
+        .dark_mode(true)
         .complexity(1)
         .build();
 
     let image_string: String = captcha.base_img.to_string();
-    /*let image_data = base64::decode(image_string).unwrap();
-
-    let img = image::load_from_memory_with_format(&image_data,image::ImageFormat::Png).unwrap();
-    img.save("./../static/captcha/captcha.png").unwrap();
-    */
-    println!("{}", &captcha.text);
     jar.add(Cookie::new("captcha", captcha.text));
 
     image_string
@@ -29,7 +23,7 @@ fn test_gen_captcha(){
         .length(5)
         .width(220)
         .height(110)
-        .dark_mode(false)
+        .dark_mode(true)
         .complexity(1)
         .build();
 

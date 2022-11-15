@@ -1,2 +1,4 @@
-[development]
-port = 6969
+[default.database.main_connection]
+url = "mysql://root:password@mysql/db"
+[release]
+address = "0.0.0.0"

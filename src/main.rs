@@ -15,6 +15,8 @@ use catchers::catchers::{not_found,server_error,invalid_form};
 
 #[launch]
 async fn launch_server() -> _ {
+
+    env_logger::init();
     
     let pool = connections::connect::create_connection().await.unwrap();
 

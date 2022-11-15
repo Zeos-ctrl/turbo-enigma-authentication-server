@@ -32,7 +32,19 @@ impl Fairing for ReRouter {
 pub async fn create_connection() -> Result<MySqlPool, sqlx::Error> {
     let pool = MySqlPoolOptions::new()
         .max_connections(5)
-        .connect("mysql://root:password@localhost/db")
+        .connect("mysql://root:password@mysql/db")
         .await?;
     Ok(pool)
+}
+
+#[sqlx::test]
+async fn create_connection_test(){
+    let pool = MySqlPoolOptions::new()
+        .max_connections(5)
+        .connect("mysql://root:password@localhost/db")
+        .await;
+    match pool{
+        Ok(_pool) => assert!(true),
+        Err(_pool) => assert!(false)
+    }
 }

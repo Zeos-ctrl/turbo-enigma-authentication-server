@@ -1,24 +1,36 @@
 use serde::Deserialize;
 use serde::Serialize;
 
+//File containing structs for all the forms and implementations for those structs
+
 #[derive(FromForm,Serialize,Deserialize)]
 pub struct User{
+    //Defines the values of the submited form and validates the inputs
+    #[field(validate = contains('@'))]
+    #[field(validate = len(1..30))]
     pub email: String,
+    #[field(validate = len(..11))]
     pub phonenumber: String,
+    #[field(validate = len(3..15))]
     pub username: String,
+    #[field(validate = len(3..20))]
     pub password: String,
     pub captcha: String
 }
 
 #[derive(FromForm,Serialize,Deserialize)]
 pub struct NewUser{
+    #[field(validate = len(5..20))]
     pub new_password: String,
 }
 
 #[derive(FromForm,Serialize,Deserialize)]
 pub struct Login{
+    #[field(validate = len(3..15))]
     pub username: String,
+    #[field(validate = len(5..20))]
     pub password: String,
+    #[field(validate = len(..6))]
     pub otp: String
 }
 
@@ -45,6 +57,10 @@ impl User{
         hashed_password
     }
 }
+
+//
+// Start of tests
+//
 
 #[test]
 fn hash_and_verify_password(){

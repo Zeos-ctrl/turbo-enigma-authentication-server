@@ -37,6 +37,10 @@ pub async fn create_connection() -> Result<MySqlPool, sqlx::Error> {
     Ok(pool)
 }
 
+//
+// Start of tests
+//
+
 #[sqlx::test]
 async fn create_connection_test(){
     let pool = MySqlPoolOptions::new()

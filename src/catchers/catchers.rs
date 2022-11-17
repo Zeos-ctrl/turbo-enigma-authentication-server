@@ -1,4 +1,5 @@
 use rocket::Request;
+use rocket::response::{Flash,Redirect};
 
 #[catch(404)]
 pub fn not_found(req: &Request) -> String {
@@ -11,6 +12,7 @@ pub fn server_error() -> String {
 }
 
 #[catch(422)]
-pub fn invalid_form(req: &Request) -> String {
-    format!("Sorry but '{}' is an invalid form.", req)
+pub fn invalid_form(req: &Request) -> Flash<Redirect> {
+    error!("Sorry but '{:?}' is an invalid form.", req);
+    Flash::error(Redirect::to(uri!("./../index.html")),"Invalid form")
 }

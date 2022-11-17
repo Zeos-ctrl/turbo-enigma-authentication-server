@@ -21,17 +21,24 @@
         </nav>
         <a class="cta"><button class="button_header" onclick="active()">Contact</button></a>
     </header>
-    <div class = "spacer homepagelayer flip"></div>
     <section class = "dark full">
-        <h1> Authentication Site </h1>
+        <div id="wrapper" data-configuration="1" data-roundness="1">
+          <div class="shape"></div>
+          <div class="shape"></div>
+          <div class="shape"></div>
+          <div class="shape"></div>
+          <div class="shape"></div>
+          <div class="shape"></div>
+          <div class="shape"></div>
+        </div>
     </section>
-    <div class = "spacer homepagelayer"></div>
     <div class = "popup">
         <div class = "close-btn">&times;</div>
         <div class = "form">
             <h2>Log In</h2>
             <div class = "form-element">
                 <form method="post" action="/api/login" name = "input">
+                    <label id="loginmessage"></label>
                     <label for="Username">Username</label>
                     <input type="text" name="username" id="username" placeholder="Enter Username">
                     <label for="password">Password</label>
@@ -54,6 +61,7 @@
             <h2>Register</h2>
             <div class = "form-element">
                 <form method="post"  action = "/api/add" name = "input">
+                    <label id="message"></label>
                     <label for="email">Email</label>
                     <input type="text" id="email" name="email" placeholder="Enter Email">
                     <label for="phonenumber">Phonenumber</label>
@@ -85,32 +93,82 @@
         </div>
     </div>
     <script type="text/javascript">
+        const wrapper = document.getElementById("wrapper");
+        const rand = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
+        const uniqueRand = (min, max, prev) => {
+          let next = prev;
+          
+          while(prev === next) next = rand(min, max);
+          
+          return next;
+        }
+
+        const combinations = [
+          { configuration: 1, roundness: 1 },
+          { configuration: 1, roundness: 2 },
+          { configuration: 1, roundness: 4 },
+          { configuration: 2, roundness: 2 },
+          { configuration: 2, roundness: 3 },
+          { configuration: 3, roundness: 3 }
+        ];
+
+        let prev = 0;
+
+        setInterval(() => {
+          const index = uniqueRand(0, combinations.length - 1, prev),
+                combination = combinations[index];
+          
+          wrapper.dataset.configuration = combination.configuration;
+          wrapper.dataset.roundness = combination.roundness;
+          
+          prev = index;
+        }, 3000);
+
         document.querySelector("#login").addEventListener("click",() => {
             document.querySelector(".popup2").classList.remove("active");
             document.querySelector(".popup").classList.add("active");
         });
+
         document.querySelector("#register").addEventListener("click", () => {
-            httpGetAsync("http://127.0.0.1:8000/gen_captcha", function(result){
+            httpGetAsync("http://127.0.0.1/gen_captcha", function(result){
                 document.getElementById("captchaimg").src = result;
             });
             document.querySelector(".popup").classList.remove("active");
             document.querySelector(".popup2").classList.add("active");
         });
+
         document.querySelector(".otp").addEventListener("click", () => {
-            httpGetAsync("http://127.0.0.1:8000/gen_qr", function(result){
+            httpGetAsync("http://127.0.0.1/gen_qr", function(result){
                 document.getElementById("qr").src = result;
             });
             document.querySelector(".popupqr").classList.add("active");
         });
+
         document.querySelector(".popup .close-btn").addEventListener("click", () => {
             document.querySelector(".popup").classList.remove("active");
         });
+
         document.querySelector(".popup2 .close-btn").addEventListener("click", () => {
             document.querySelector(".popup2").classList.remove("active");
         });
+
         document.querySelector(".popupqr .close-btn").addEventListener("click", () => {
             document.querySelector(".popupqr").classList.remove("active");
         });
+        
+        window.onload = function(){
+            let cookie = getCook('_flash');
+            let message = cookie.slice(7, cookie.length);
+            document.getElementById('message').innerHTML = message;
+            document.getElementById('loginmessage').innerHTML = message;
+        }
+
+        function getCook(cookiename) {
+          // Get name followed by anything except a semicolon
+          var cookiestring=RegExp(cookiename+"=[^;]+").exec(document.cookie);
+          // Return everything after the equal sign, or an empty string if the cookie name not found
+          return decodeURIComponent(!!cookiestring ? cookiestring.toString().replace(/^[^=]+./,"") : "");
+        }
 
         function httpGetAsync(theUrl, callback){
             var xmlHttp = new XMLHttpRequest();

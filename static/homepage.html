@@ -113,7 +113,7 @@
             document.querySelector(".account").classList.add("active");
         });
         document.querySelector("#deleteconfirm").addEventListener("click",() => {
-            httpDelete("http://127.0.0.1:8000/api/remove",function(result){
+            httpDelete("/api/remove",function(result){
                 document.location = (result);
             }); 
         });

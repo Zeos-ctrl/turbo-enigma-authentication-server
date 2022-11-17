@@ -12,7 +12,7 @@ sudo docker compose up
 ```
 ### TO DO LIST
 
-- [ ] Add better comments
-- [ ] Get rid of the majority of unwraps
+- [x] Add better comments
+- [x] Get rid of the majority of unwraps
 - [ ] Database Migration Scripts
 - [ ] TLS

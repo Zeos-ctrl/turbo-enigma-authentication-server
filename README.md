@@ -14,5 +14,5 @@ sudo docker compose up
 
 - [x] Add better comments
 - [x] Get rid of the majority of unwraps
-- [ ] Database Migration Scripts
+- [x] Database Migration Scripts
 - [ ] TLS

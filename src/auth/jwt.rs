@@ -26,7 +26,7 @@ impl<'r> FromRequest<'r> for JwtToken{
     //From request guard that gets the JWT in the cookie and decodes it
     //if the decode is successful the user can see the page
     async fn from_request(req: &'r Request<'_>) -> request::Outcome<Self,Self::Error> {
-        let token = req.cookies().get_private("token").unwrap();
+        let token = req.cookies().get("token").unwrap();
         let token_value = token.value().to_string();
 
         let decoded = JwtToken::decode(token_value);

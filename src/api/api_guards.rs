@@ -6,8 +6,9 @@ use super::super::auth::jwt::JwtToken;
 
 //Request guard implementations for the jwt guard
 
-#[get("/homepage.html")]
-pub async fn homepage_accept(_jwt: JwtToken){
+#[get("/homepage")]
+pub async fn homepage_accept(_jwt: JwtToken) -> Flash<Redirect>{
+    Flash::success(Redirect::to(uri!("/homepage.html")), "Redirect")
 }
 
 #[get("/signout")]

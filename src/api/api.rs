@@ -35,7 +35,7 @@ pub async fn login(pool: &State<Pool>,jar: &CookieJar<'_>, login: Form<Login>) -
         match user {
             Ok(user) => {
                 if login.verify_password(&user.password){
-                    jar.add_private(Cookie::new("token", JwtToken::encode(&user.uuid)));
+                    jar.add(Cookie::new("token", JwtToken::encode(&user.uuid)));
                     info!("Logged in user: {}", &login.username);
                     Flash::success(Redirect::to(uri!("/homepage")), "Correct credentials")
                 }else{
@@ -55,7 +55,7 @@ pub async fn login(pool: &State<Pool>,jar: &CookieJar<'_>, login: Form<Login>) -
 pub async fn register(pool: &State<Pool>,jar: &CookieJar<'_>, user: Form<User>) -> Flash<Redirect>{
 
     //Gets the captcha cookie and sees if its the same as the user input
-    let captcha = jar.get_private("captcha").unwrap().to_string();
+    let captcha = jar.get("captcha").unwrap().to_string();
     let secret = Secret::Encoded("KRSXG5CTMVRXEZLUKN2XAZLSKNSWG4TFOQ".to_string()).to_bytes().unwrap();
     if user.captcha == captcha[8..] {
         let id = Uuid::new_v4();
@@ -104,11 +104,11 @@ pub async fn remove_account(pool: &State<Pool>, token: JwtToken) -> String{
     match query {
         Ok(_query) => {
             info!("Removing account: {}", &decoded.user_id);
-            format!("http://127.0.0.1:8000/index.html")
+            format!("http://127.0.0.1/index.html")
         },
         Err(_) => {
             error!("Cannot remove account: {}", &decoded.user_id); 
-            format!("http://127.0.0.1:8000/homepage.html")
+            format!("http://127.0.0.1/homepage.html")
         }
     }
 }

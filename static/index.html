@@ -130,7 +130,7 @@
         });
 
         document.querySelector("#register").addEventListener("click", () => {
-            httpGetAsync("http://127.0.0.1/gen_captcha", function(result){
+            httpGetAsync("/gen_captcha", function(result){
                 document.getElementById("captchaimg").src = result;
             });
             document.querySelector(".popup").classList.remove("active");
@@ -138,7 +138,7 @@
         });
 
         document.querySelector(".otp").addEventListener("click", () => {
-            httpGetAsync("http://127.0.0.1/gen_qr", function(result){
+            httpGetAsync("/gen_qr", function(result){
                 document.getElementById("qr").src = result;
             });
             document.querySelector(".popupqr").classList.add("active");

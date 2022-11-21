@@ -28,9 +28,8 @@ pub struct NewUser{
 pub struct Login{
     #[field(validate = len(3..15))]
     pub username: String,
-    #[field(validate = len(5..20))]
+    #[field(validate = len(3..20))]
     pub password: String,
-    #[field(validate = len(..6))]
     pub otp: String
 }
 

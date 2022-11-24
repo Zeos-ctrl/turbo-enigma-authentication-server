@@ -9,7 +9,6 @@ pub struct User{
     #[field(validate = contains('@'))]
     #[field(validate = len(1..30))]
     pub email: String,
-    #[field(validate = len(..11))]
     pub phonenumber: String,
     #[field(validate = len(3..15))]
     pub username: String,
@@ -20,7 +19,7 @@ pub struct User{
 
 #[derive(FromForm,Serialize,Deserialize)]
 pub struct NewUser{
-    #[field(validate = len(5..20))]
+    #[field(validate = len(2..20))]
     pub new_password: String,
 }
 

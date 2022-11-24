@@ -35,4 +35,4 @@ async fn launch_server() -> _ {
         .mount("/", routes![homepage_accept,signout,gen_captcha,gen_qr])
         .mount("/", FileServer::from(relative!("static")))
         .attach(ReRouter)
-    }
+}

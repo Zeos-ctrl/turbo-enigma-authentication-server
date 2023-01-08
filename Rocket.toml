@@ -1,6 +1,6 @@
 [default.database.main_connection]
-url = "mysql://root:password@mysql/db"
+#url = "mysql://root:password@mysql/db"
 #Development database
-#url = "mysql://root:password@localhost/db"
+url = "mysql://root:password@localhost/db"
 [release]
 address = "0.0.0.0"

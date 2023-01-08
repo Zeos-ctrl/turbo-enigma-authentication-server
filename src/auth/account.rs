@@ -55,18 +55,3 @@ impl User{
         hashed_password
     }
 }
-
-//
-// Start of tests
-//
-
-#[test]
-fn hash_and_verify_password(){
-    let unhashed_password = String::from("test");
-    let cost: u32 = 10;
-    let hashed_password = bcrypt::hash(unhashed_password,cost).unwrap();
-    println!("{}",hashed_password);
-    let verify = bcrypt::verify("test", &hashed_password).unwrap();
-    
-    assert_eq!(verify,true);
-}

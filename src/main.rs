@@ -2,14 +2,14 @@ mod auth;
 mod connections;
 mod api;
 mod catchers;
+mod tests;
 
 use rocket::fs::{FileServer, relative};
 use env_logger::Builder;
 use log::LevelFilter;
 
 use connections::connect::ReRouter;
-use api::api::{login,register,remove_account,edit_account};
-use api::api_guards::{homepage_accept,signout};
+use api::{login,register,modify,remove,api_guards};
 use auth::captcha::gen_captcha;
 use auth::otp::gen_qr;
 use catchers::catchers::{not_found,server_error,invalid_form};
@@ -29,10 +29,20 @@ async fn launch_server() -> _ {
 
     //Starts the server and mounts the routes
     rocket::build()
-        .manage(api::api::Pool(pool))
+        .manage(connections::connect::Pool(pool))
         .register("/", catchers![not_found,server_error,invalid_form])
-        .mount("/api", routes![login,register,remove_account,edit_account])
-        .mount("/", routes![homepage_accept,signout,gen_captcha,gen_qr])
+        .mount("/api", routes![
+               login::login,
+               register::register,
+               modify::modify,
+               remove::remove_account
+        ])
+        .mount("/", routes![
+               api_guards::homepage_accept,
+               api_guards::signout,
+               gen_captcha,
+               gen_qr
+        ])
         .mount("/", FileServer::from(relative!("static")))
         .attach(ReRouter)
 }

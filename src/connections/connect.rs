@@ -5,6 +5,9 @@ use rocket::fairing::{Fairing,Info,Kind};
 use rocket::http::{Method, ContentType, Status};
 use std::io::Cursor;
 
+//Empty pool struct to be managed by each function
+pub struct Pool(pub MySqlPool);
+
 pub struct ReRouter;
 
 #[rocket::async_trait]
@@ -35,20 +38,4 @@ pub async fn create_connection() -> Result<MySqlPool, sqlx::Error> {
         .connect("mysql://root:password@mysql/db")
         .await?;
     Ok(pool)
-}
-
-//
-// Start of tests
-//
-
-#[sqlx::test]
-async fn create_connection_test(){
-    let pool = MySqlPoolOptions::new()
-        .max_connections(5)
-        .connect("mysql://root:password@localhost/db")
-        .await;
-    match pool{
-        Ok(_pool) => assert!(true),
-        Err(_pool) => assert!(false)
-    }
 }
